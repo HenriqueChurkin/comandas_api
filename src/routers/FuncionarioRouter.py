@@ -13,6 +13,8 @@ from domain.schemas.FuncionarioSchema import (
 from infra.orm.FuncionarioModel import FuncionarioDB
 from infra.database import get_db
 
+from infra.security import get_password_hash
+
 router = APIRouter()
 
 # Criar as rotas/endpoints: GET, POST, PUT, DELETE
