@@ -15,9 +15,14 @@ class ProdutoUpdate(BaseModel):
 
 class ProdutoResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    
     id: int
     nome: str
     descricao: str
     foto: bytes
     valor_unitario: float
+
+class ProdutoResponsePublico(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    nome: str
+    descricao: str
+    foto: bytes
