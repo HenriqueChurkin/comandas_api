@@ -29,7 +29,6 @@ async def get_cliente(db: Session = Depends(get_db)):
             detail=f"Erro ao buscar clientes: {str(e)}"
         )
 
-
 @router.get("/cliente/{id}", response_model=ClienteResponse, tags=["Cliente"], status_code=status.HTTP_200_OK)
 async def get_cliente(id: int, db: Session = Depends(get_db)):
     """Retorna um cliente específico pelo ID"""
@@ -51,7 +50,6 @@ async def get_cliente(id: int, db: Session = Depends(get_db)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erro ao buscar cliente: {str(e)}"
         )
-
 
 @router.post("/cliente/", response_model=ClienteResponse, status_code=status.HTTP_201_CREATED, tags=["Cliente"])
 async def post_cliente(cliente_data: ClienteCreate, db: Session = Depends(get_db)):
@@ -89,7 +87,6 @@ async def post_cliente(cliente_data: ClienteCreate, db: Session = Depends(get_db
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erro ao criar cliente: {str(e)}"
         )
-
 
 @router.put("/cliente/{id}", response_model=ClienteResponse, tags=["Cliente"], status_code=status.HTTP_200_OK)
 async def put_cliente(id: int, cliente_data: ClienteUpdate, db: Session = Depends(get_db)):
@@ -135,7 +132,6 @@ async def put_cliente(id: int, cliente_data: ClienteUpdate, db: Session = Depend
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erro ao atualizar cliente: {str(e)}"
         )
-
 
 @router.delete("/cliente/{id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Cliente"], summary="Remover cliente")
 async def delete_cliente(id: int, db: Session = Depends(get_db)):
