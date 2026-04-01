@@ -5,21 +5,21 @@ router = APIRouter()
 
 # Criar as rotas/endpoints: GET, POST, PUT, DELETE
 @router.get("/produto/", tags=["Produto"], status_code=200)
-async def get_produto():
+def get_produto():
     return {"msg": "produto get todos executado"}
 
 @router.get("/produto/{id}", tags=["Produto"], status_code=200)
-async def get_produto_por_id(id: int):
+def get_produto_por_id(id: int):
     return {"msg": "produto get um executado", "id": id}
 
 @router.post("/produto/", tags=["Produto"], status_code=200)
-async def post_produto(corpo: Produto):
+def post_produto(corpo: Produto):
     return {"msg": "produto post executado", "nome": corpo.nome, "preco": corpo.valor_unitario, "descricao": corpo.descricao}
 
 @router.put("/produto/{id}", tags=["Produto"], status_code=200)
-async def put_produto(id: int, corpo: Produto):
+def put_produto(id: int, corpo: Produto):
     return {"msg": "produto put executado", "id": id}
 
 @router.delete("/produto/{id}", tags=["Produto"], status_code=200)
-async def delete_produto(id: int):
+def delete_produto(id: int):
     return {"msg": "produto delete executado", "id": id}
