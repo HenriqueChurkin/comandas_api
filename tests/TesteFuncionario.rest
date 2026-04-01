@@ -10,7 +10,7 @@ Content-Type: application/json
 
 {
     "nome" : "Henrique Churkin",
-    "matricula" : "he12345",
+    "matricula" : "he123456",
     "cpf" : "1",
     "telefone" : "49991999999",
     "grupo" : 1,
