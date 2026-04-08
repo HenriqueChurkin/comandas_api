@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
+from services.AuditoriaService import AuditoriaService
 from sqlalchemy.orm import Session
 from datetime import timedelta
 
@@ -14,7 +15,7 @@ from settings import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
 router = APIRouter()
 
 @router.post("/auth/login", response_model=TokenResponse, tags=["Autenticação"], summary="Login de funcionário - pública - retorna access e refresh token")
-async def login(login_data: LoginRequest, db: Session = Depends(get_db)):
+async def login(request: Request, login_data: LoginRequest, db: Session = Depends(get_db)):
     """
     Realiza login do funcionário e retorna access token e refresh token
     - **cpf**: CPF do funcionário - **senha**: Senha do funcionário
@@ -51,18 +52,46 @@ async def login(login_data: LoginRequest, db: Session = Depends(get_db)):
             }
         )
 
+        # Registrar auditoria de login (SUCESSO)
+        AuditoriaService.registrar_acao(
+            db=db,
+            funcionario_id=funcionario.id,
+            acao="LOGIN",
+            recurso="AUTH",
+            recurso_id=funcionario.id,
+            dados_antigos=None,
+            dados_novos={"cpf": funcionario.cpf},
+            request=request
+        )
+
         return TokenResponse(
             access_token=access_token,
             refresh_token=refresh_token,
             token_type="bearer",
-            expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60, # em segundos
-            refresh_expires_in=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60 # em segundos
+            expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            refresh_expires_in=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
         )
-    except HTTPException:
+
+    except HTTPException as e:
+        # Registrar tentativa de login inválida
+        AuditoriaService.registrar_acao(
+            db=db,
+            funcionario_id=0,
+            acao="LOGIN_FAIL",
+            recurso="AUTH",
+            dados_antigos=None,
+            dados_novos={"cpf": login_data.cpf},
+            request=request
+        )
         raise
+
     except Exception as e:
-        raise HTTPException( status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Erro ao realizar login: {str(e)}" )
-    
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao realizar login: {str(e)}"
+        )
+
+
 @router.post("/auth/refresh", response_model=TokenResponse, tags=["Autenticação"], summary="Refresh token - pública - renova access token")
 async def refresh_token(refresh_data: RefreshTokenRequest, db: Session = Depends(get_db)):
     """
@@ -100,6 +129,19 @@ async def refresh_token(refresh_data: RefreshTokenRequest, db: Session = Depends
                 "grupo": funcionario.grupo
             }
         )
+
+        # Auditoria de refresh
+        AuditoriaService.registrar_acao(
+            db=db,
+            funcionario_id=funcionario.id,
+            acao="REFRESH_TOKEN",
+            recurso="AUTH",
+            recurso_id=funcionario.id,
+            dados_antigos=None,
+            dados_novos={"cpf": funcionario.cpf},
+            request=None  # aqui não tem request
+        )
+
         return TokenResponse(
             access_token=access_token,
             refresh_token=new_refresh_token,
@@ -111,8 +153,13 @@ async def refresh_token(refresh_data: RefreshTokenRequest, db: Session = Depends
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Erro ao renovar token: {str(e)}", headers={"WWW-Authenticate": "Bearer"}, )
-    
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Erro ao renovar token: {str(e)}",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
 @router.get("/auth/me", response_model=FuncionarioAuth, tags=["Autenticação"], summary="Dados do usuário atual - protegida por autenticação")
 async def get_current_user_info(current_user: FuncionarioAuth = Depends(get_current_active_user)):
     """
@@ -121,11 +168,24 @@ async def get_current_user_info(current_user: FuncionarioAuth = Depends(get_curr
     """
     return current_user
 
+
 @router.post("/auth/logout", tags=["Autenticação"], summary="Logout - pública")
-async def logout():
+async def logout(request: Request, current_user: FuncionarioAuth = Depends(get_current_active_user)):
     """
     Endpoint para logout (client-side)
     Na prática, o logout é implementado no cliente removendo os tokens
     Este endpoint existe apenas para completude da API
     """
+    # Auditoria de logout
+    AuditoriaService.registrar_acao(
+        db=None,
+        funcionario_id=current_user.id,
+        acao="LOGOUT",
+        recurso="AUTH",
+        recurso_id=current_user.id,
+        dados_antigos=None,
+        dados_novos=None,
+        request=request
+    )
+
     return {"message": "Logout realizado com sucesso"}
