@@ -1,8 +1,23 @@
+# token
+@access_token = seuToken
+
 ### Verbo GET – listar todos
 GET http://localhost:8000/funcionario/ HTTP/1.1
 
 ### Verbo GET – listar um
 GET http://localhost:8000/funcionario/10 HTTP/1.1
+
+### listar todos com filtro
+GET http://localhost:8000/funcionario/?skip=0&limit=100&id=1&nome=ze&matricula=123&cpf=1&grupo=2%2C1&telefone=49 HTTP/1.1
+Authorization: Bearer {{access_token}}
+
+### listar todos com paginação - página 1
+GET http://localhost:8000/funcionario/?skip=0&limit=3 HTTP/1.1
+Authorization: Bearer {{access_token}}
+
+### listar todos com paginação - página 2
+GET http://localhost:8000/funcionario/?skip=3&limit=3 HTTP/1.1
+Authorization: Bearer {{access_token}}
 
 ### Verbo POST – adicionar
 POST http://127.0.0.1:8000/funcionario/ HTTP/1.1
