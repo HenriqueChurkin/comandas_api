@@ -15,7 +15,7 @@ from infra.rate_limit import limiter, get_rate_limit
 router = APIRouter()
 
 @router.get("/auditoria", response_model=List[AuditoriaResponse], tags=["Auditoria"], summary="Listar registros de auditoria - protegida por JWT e grupo 1")
-@limiter.limit(get_rate_limit("moderate"))
+#@limiter.limit(get_rate_limit("moderate"))
 async def listar_auditoria(
     request: Request,
     funcionario_id: Optional[int] = Query(None, description="Filtrar por funcionário"),
@@ -83,7 +83,7 @@ async def listar_auditoria(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Erro ao listar auditoria: {str(e)}")
 
 @router.get("/auditoria/acoes", tags=["Auditoria"], summary="Listar tipos de ações disponíveis para filtro - protegida por JWT e grupo 1")
-@limiter.limit(get_rate_limit("light"))
+#@limiter.limit(get_rate_limit("light"))
 async def listar_acoes_disponiveis(
     request: Request,
     db: Session = Depends(get_db), current_user: FuncionarioAuth = Depends(require_group([1]))
